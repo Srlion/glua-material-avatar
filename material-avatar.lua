@@ -22,7 +22,7 @@ local function getAvatarMaterial(steamid64, callback)
 	-- Fetch the XML version of the player's Steam profile.
 	-- This XML contains a tag, <avatarFull> which contains the URL to their full avatar.
 	http.Fetch("https://steamcommunity.com/profiles/" .. steamid64 .. "?xml=1",
-	
+
 		function(body, size, headers, code)
 			-- If the HTTP request fails (size = 0, code is not a HTTP success response code) then return the fallback
 			if size == 0 or code < 200 or code > 299 then return callback(fallback, steamid64) end
@@ -33,7 +33,7 @@ local function getAvatarMaterial(steamid64, callback)
 
 			-- Download the avatar image
 			http.Fetch(url .. fileType,
-				
+
 				function(body, size, headers, code)
 					if size == 0 or code < 200 or code > 299 then return callback(fallback, steamid64) end
 
@@ -58,7 +58,7 @@ local function getAvatarMaterial(steamid64, callback)
 
 			)
 		end,
-		
+
 		-- If we hard-fail, return the fallback image.
 		function() callback(fallback, steamid64) end
 	)

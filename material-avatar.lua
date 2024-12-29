@@ -6,9 +6,7 @@ local function getAvatarMaterial(steamid64, callback)
 	-- If an avatar material is 1 day old, let's redownload it but use it as a fallback in case something goes wrong.
 	local fallback
 	if os.time() - file.Time("avatars/" .. steamid64 .. ".png", "DATA") > AVATAR_IMAGE_CACHE_EXPIRES then
-		fallback = Material("../data/avatars/" .. steamid64 .. ".png", "smooth")
-	elseif os.time() - file.Time("avatars/" .. steamid64 .. ".jpg", "DATA") > AVATAR_IMAGE_CACHE_EXPIRES then
-		fallback = Material("../data/avatars/" .. steamid64 .. ".jpg", "smooth")
+		fallback = Material("data/avatars/" .. steamid64 .. ".png", "smooth")
 	end
 
 	-- If a fallback couldn't be found in data/, default to vgui/avatar_default
@@ -27,21 +25,21 @@ local function getAvatarMaterial(steamid64, callback)
 			-- If the HTTP request fails (size = 0, code is not a HTTP success response code) then return the fallback
 			if size == 0 or code < 200 or code > 299 then return callback(fallback, steamid64) end
 
-			local url, fileType = body:match("<avatarFull>.-(https?://%S+%f[%.]%.)(%w+).-</avatarFull>") -- Extract the URL and file extension from <avatarFull>
-			if not url or not fileType then return callback(fallback, steamid64) end -- If the URL or file type couldn't be extracted, return the fallback.
-			if fileType == "jpeg" then fileType = "jpg" end -- Defensively ensure jpeg -> jpg.
+			-- Extract the URL to the full avatar image from the XML
+			local url = body:match("(https?://%S+_full%.%w+)")
 
 			-- Download the avatar image
-			http.Fetch(url .. fileType,
+			http.Fetch(url,
 
 				function(body, size, headers, code)
 					if size == 0 or code < 200 or code > 299 then return callback(fallback, steamid64) end
 
-					local cachePath = "avatars/" .. steamid64 .. "." .. fileType
+					-- We can write any file extension here, Material can load it even if the format doesn't match it. https://wiki.facepunch.com/gmod/Global.Material
+					local cachePath = "avatars/" .. steamid64 .. ".png"
 					file.CreateDir("avatars")
 					file.Write(cachePath, body) -- Write the avatar to data/
 
-					local material = Material("../data/" .. cachePath, "smooth") -- Load the avatar from data/ as a Material
+					local material = Material("data/" .. cachePath, "smooth") -- Load the avatar from data/ as a Material
 					if material:IsError() then
 						-- If the material errors, the image must be corrupt, so we'll delete this from data/ and return the fallback.
 						file.Delete(cachePath)

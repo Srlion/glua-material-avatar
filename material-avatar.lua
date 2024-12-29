@@ -12,9 +12,17 @@ local function getAvatarMaterial(steamid64, callback)
 		end
 	end
 
+	-- Bots' SteamID64s start with 900, so we can use this to determine if the player is a bot or not.
+	local isBot = steamid64:StartsWith("900")
+
 	-- If a fallback couldn't be found in data/, default to vgui/avatar_default
-	if not fallback or fallback:IsError() then
+	if isBot or not fallback or fallback:IsError() then
 		fallback = Material("vgui/avatar_default")
+
+		-- If the player is a bot, we don't need to download their avatar, so return the fallback.
+		if isBot then
+			return callback(fallback)
+		end
 	else
 		-- Otherwise, if a cached avatar was found, and it hasn't expired, return it!
 		return callback(fallback)

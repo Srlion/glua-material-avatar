@@ -4,9 +4,12 @@ local function getAvatarMaterial(steamid64, callback)
 	-- First, check the cache to see if this avatar has already been downloaded.
 	-- If the avatar hasn't been cached in data/, file.Time will return 0.
 	-- If an avatar material is 1 day old, let's redownload it but use it as a fallback in case something goes wrong.
-	local fallback
-	if os.time() - file.Time("avatars/" .. steamid64 .. ".png", "DATA") > AVATAR_IMAGE_CACHE_EXPIRES then
-		fallback = Material("data/avatars/" .. steamid64 .. ".png", "smooth")
+	local fallback; do
+		local time_since_creation = os.time() - file.Time("avatars/" .. steamid64 .. ".png", "DATA")
+		-- If the file exists (0 = does not exist) and is less than 1 day old, load it as a fallback.
+		if time_since_creation ~= 0 and time_since_creation < AVATAR_IMAGE_CACHE_EXPIRES then
+			fallback = Material("data/avatars/" .. steamid64 .. ".png", "smooth")
+		end
 	end
 
 	-- If a fallback couldn't be found in data/, default to vgui/avatar_default

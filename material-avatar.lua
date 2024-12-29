@@ -8,7 +8,7 @@ local function getAvatarMaterial(steamid64, callback)
 		local time_since_creation = os.time() - file.Time("avatars/" .. steamid64 .. ".png", "DATA")
 		-- If the file exists (0 = does not exist) and is less than 1 day old, load it as a fallback.
 		if time_since_creation ~= 0 and time_since_creation < AVATAR_IMAGE_CACHE_EXPIRES then
-			fallback = Material("data/avatars/" .. steamid64 .. ".png", "smooth")
+			fallback = Material("data/avatars/" .. steamid64 .. ".png", "smooth mips")
 		end
 	end
 
@@ -50,7 +50,7 @@ local function getAvatarMaterial(steamid64, callback)
 					file.CreateDir("avatars")
 					file.Write(cachePath, body) -- Write the avatar to data/
 
-					local material = Material("data/" .. cachePath, "smooth") -- Load the avatar from data/ as a Material
+					local material = Material("data/" .. cachePath, "smooth mips") -- Load the avatar from data/ as a Material
 					if material:IsError() then
 						-- If the material errors, the image must be corrupt, so we'll delete this from data/ and return the fallback.
 						file.Delete(cachePath)
